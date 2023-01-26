@@ -4,7 +4,7 @@ use super::common::*;
 use crate::storage_tracker::StorageUsageTrackerData;
 use near_contract_standards::storage_management::*;
 use near_sdk::test_utils::accounts;
-use near_sdk::{AccountId, env, testing_env, ONE_NEAR};
+use near_sdk::{env, testing_env, AccountId, ONE_NEAR};
 
 #[test]
 fn test_single_account_max_id_len_storage_deposit() {
@@ -73,7 +73,10 @@ fn test_account_storage_deposit_registration_only() {
 
     assert!(contract.accounts.get(&account_id).is_some());
     assert_eq!(account.storage_usage, account_storage_used);
-    assert_eq!(account.storage_balance, account_storage_used as u128 * env::storage_byte_cost())
+    assert_eq!(
+        account.storage_balance,
+        account_storage_used as u128 * env::storage_byte_cost()
+    )
 }
 
 #[test]
@@ -96,7 +99,10 @@ fn test_account_storage_deposit_registration_only_register_twice() {
 
     assert!(contract.accounts.get(&account_id).is_some());
     assert_eq!(account.storage_usage, account_storage_used);
-    assert_eq!(account.storage_balance, account_storage_used as u128 * env::storage_byte_cost())
+    assert_eq!(
+        account.storage_balance,
+        account_storage_used as u128 * env::storage_byte_cost()
+    )
 }
 
 #[test]
@@ -111,11 +117,7 @@ fn test_account_storage_deposit_overflow() {
     // register account with maximum allowed deposit
     contract.accounts.insert(
         account_id.clone(),
-        Account::new(
-            &account_id,
-            Some(u128::MAX),
-        )
-        .into(),
+        Account::new(&account_id, Some(u128::MAX)).into(),
     );
     contract.accounts.flush(); // flush content before use env::storage_usage()
 
@@ -202,10 +204,9 @@ fn test_storage_unregister_zero_balance() {
 
     let mut contract = Contract::init(Some(accounts(0)));
 
-    contract.accounts.insert(
-        account_id.clone(),
-        Account::new(&account_id, None).into(),
-    );
+    contract
+        .accounts
+        .insert(account_id.clone(), Account::new(&account_id, None).into());
     contract.accounts.flush(); // flush content before use env::storage_usage()
 
     testing_env!(context.build());
@@ -293,5 +294,8 @@ fn test_storage_balance_of() {
     let storage_balance = contract.storage_balance_of(account_id.clone()).unwrap();
 
     assert_eq!(storage_balance.total.0, ONE_NEAR);
-    assert_eq!(storage_balance.available.0, ONE_NEAR - Account::required_deposit(Some(&account_id)).0);
+    assert_eq!(
+        storage_balance.available.0,
+        ONE_NEAR - Account::required_deposit(Some(&account_id)).0
+    );
 }
