@@ -83,10 +83,15 @@ impl StorageManagement for Contract {
             .get_account_mut(&account_id)
             .unwrap_or_else(|e| env::panic_str(e));
 
-        // If amount not provided, use all available storage balance
-        let withdraw_amount = amount
-            .unwrap_or_else(|| account.storage_balance().available)
-            .into();
+        let available_balance = account.storage_balance().available;
+        let withdraw_amount = match amount {
+            Some(U128(amount)) if amount > 0 && amount <= available_balance.0 => amount,
+
+            // If amount not provided, use all available storage balance
+            None if available_balance.0 > 0 => available_balance.0,
+
+            _ => env::panic_str("Not enough available storage to withdraw"),
+        };
 
         account.storage_balance = account
             .storage_balance
